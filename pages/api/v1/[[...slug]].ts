@@ -24,9 +24,9 @@ const handler: NextApiHandler<Data> = async (req, res) => {
         query: { slug },
         method
     } = req;
-    console.log(slug)
-    if (!slug || !Array.isArray(slug) || slug.length !== 3 )
-        return res.status(404).json({ error: "Not Found" });
+    //console.log(slug)
+    //if (!slug || !Array.isArray(slug) || slug.length !== 3 )
+      //  return res.status(404).json({ error: "Not Found" });
 
     if (!method || !methods.includes(method)) {
         res.setHeader("Allow", methods);
