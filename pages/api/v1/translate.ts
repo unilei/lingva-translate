@@ -11,7 +11,7 @@ type Data = {
     error: string
 };
 
-const methods = ["GET"];
+const methods = ["POST"];
 
 const handler: NextApiHandler<Data> = async (req, res) => {
     await NextCors(req, res, {
@@ -19,13 +19,12 @@ const handler: NextApiHandler<Data> = async (req, res) => {
         origin: "*",
         preflightContinue: true
     });
-
     const {
-        query: { slug },
+        body: { source,target,text },
         method
     } = req;
 
-    if (!slug || !Array.isArray(slug) || slug.length !== 3)
+    if (!source || !target || !text)
         return res.status(404).json({ error: "Not Found" });
 
     if (!method || !methods.includes(method)) {
@@ -33,13 +32,11 @@ const handler: NextApiHandler<Data> = async (req, res) => {
         return res.status(405).json({ error: "Method Not Allowed" });
     }
 
-    const [source, target, query] = slug;
-
     if (!isValidCode(target, LanguageType.TARGET))
         return res.status(400).json({ error: "Invalid target language" });
 
     if (source === "audio") {
-        const audio = await getAudio(target, query);
+        const audio = await getAudio(target, text);
         return audio
             ? res.status(200).json({ audio })
             : res.status(500).json({ error: "An error occurred while retrieving the audio" });
@@ -48,12 +45,12 @@ const handler: NextApiHandler<Data> = async (req, res) => {
     if (!isValidCode(source, LanguageType.SOURCE))
         return res.status(400).json({ error: "Invalid source language" });
 
-    const translation = await getTranslationText(source, target, query);
+    const translation = await getTranslationText(source, target, text);
 
     if (!translation)
         return res.status(500).json({ error: "An error occurred while retrieving the translation" });
 
-    const info = await getTranslationInfo(source, target, query);
+    const info = await getTranslationInfo(source, target, text);
 
     return info
         ? res.status(200).json({ translation, info })
